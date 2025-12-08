@@ -81,25 +81,6 @@ python3 resolve_lutris_installer.py --print-lutris-paths
 - If Vulkan is unavailable, DXVK/VKD3D are automatically disabled
 - If optional DLLs are missing, you will get warnings, not hard failure
 
-
-## Bottles / Heroic Support
-
-You can also generate setup guides for Bottles and Heroic.
-
-Generate Bottles guide:
-```bash
-python3 resolve_lutris_installer.py --action generate --launcher bottles --runner wine --target all --output-dir .
-```
-
-Generate Heroic guide:
-```bash
-python3 resolve_lutris_installer.py --action generate --launcher heroic --runner wine --target all --output-dir .
-```
-
-This creates:
-- `bottles-setup.md`
-- `heroic-setup.md`
-
 ## For Developers
 
 Technical details are documented in `DEVELOPER.md`.
