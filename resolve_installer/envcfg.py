@@ -14,22 +14,51 @@ def prefix_dir(prefix_root: Path, target: TargetConfig, runner: RunnerConfig) ->
     return base / "pfx" if runner.runner == "proton" else base
 
 
-def detect_vulkan_support() -> bool:
-    """Best-effort check for Vulkan availability on the current system."""
+def _parse_vulkan_version(text: str) -> tuple[int, int, int] | None:
+    for raw in text.splitlines():
+        line = raw.strip().lower()
+        if "api version" not in line:
+            continue
+        parts = raw.replace(",", " ").split()
+        for token in parts:
+            token = token.strip()
+            if token.count(".") >= 2 and token[0].isdigit():
+                try:
+                    major, minor, patch = token.split(".")[:3]
+                    return (int(major), int(minor), int(patch))
+                except ValueError:
+                    continue
+    return None
+
+
+def detect_vulkan_support(min_api: tuple[int, int, int] = (1, 3, 0)) -> bool:
+    """Return True only when Vulkan is available and API version is high enough for DXVK/VKD3D."""
     vulkaninfo = shutil.which("vulkaninfo")
     if not vulkaninfo:
         return False
-    try:
-        result = subprocess.run(
-            [vulkaninfo, "--summary"],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            timeout=10,
-            check=False,
-        )
-        return result.returncode == 0
-    except (OSError, subprocess.SubprocessError):
-        return False
+
+    for args in ([vulkaninfo, "--summary"], [vulkaninfo]):
+        try:
+            result = subprocess.run(
+                args,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                timeout=15,
+                check=False,
+            )
+        except (OSError, subprocess.SubprocessError):
+            continue
+
+        if result.returncode != 0 or not result.stdout:
+            continue
+
+        version = _parse_vulkan_version(result.stdout)
+        if version is None:
+            continue
+        return version >= min_api
+
+    return False
 
 
 def base_env(

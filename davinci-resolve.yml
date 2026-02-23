@@ -78,8 +78,8 @@
     wine:
       esync: true
       fsync: false
-      dxvk: true
-      vkd3d: true
+      dxvk: false
+      vkd3d: false
       latencyflex: true
       overrides:
         directml: n,b
@@ -94,8 +94,7 @@
         __GL_DISK_CACHE: '1'
         VK_ICD_FILENAMES: /usr/share/vulkan/icd.d
         LATENCYFLEX: '1'
-        DXVK_LOG_LEVEL: info
-        VKD3D_DEBUG: warn
+        PROTON_USE_WINED3D: '1'
         CUDA_EXPERIMENTAL: '1'
 - name: DaVinci Resolve Free (ARM64) (wine)
   game_slug: davinci-resolve
@@ -175,8 +174,8 @@
     wine:
       esync: true
       fsync: false
-      dxvk: true
-      vkd3d: true
+      dxvk: false
+      vkd3d: false
       latencyflex: true
       overrides:
         directml: n,b
@@ -190,8 +189,7 @@
         __GL_DISK_CACHE: '1'
         VK_ICD_FILENAMES: /usr/share/vulkan/icd.d
         LATENCYFLEX: '1'
-        DXVK_LOG_LEVEL: info
-        VKD3D_DEBUG: warn
+        PROTON_USE_WINED3D: '1'
 - name: DaVinci Resolve Studio (x86_64) (wine)
   game_slug: davinci-resolve-studio
   version: davinci-resolve-studio-x86_64
@@ -272,8 +270,8 @@
     wine:
       esync: true
       fsync: false
-      dxvk: true
-      vkd3d: true
+      dxvk: false
+      vkd3d: false
       latencyflex: true
       overrides:
         directml: n,b
@@ -288,8 +286,7 @@
         __GL_DISK_CACHE: '1'
         VK_ICD_FILENAMES: /usr/share/vulkan/icd.d
         LATENCYFLEX: '1'
-        DXVK_LOG_LEVEL: info
-        VKD3D_DEBUG: warn
+        PROTON_USE_WINED3D: '1'
         CUDA_EXPERIMENTAL: '1'
 - name: DaVinci Resolve Studio (ARM64) (wine)
   game_slug: davinci-resolve-studio
@@ -369,8 +366,8 @@
     wine:
       esync: true
       fsync: false
-      dxvk: true
-      vkd3d: true
+      dxvk: false
+      vkd3d: false
       latencyflex: true
       overrides:
         directml: n,b
@@ -384,5 +381,4 @@
         __GL_DISK_CACHE: '1'
         VK_ICD_FILENAMES: /usr/share/vulkan/icd.d
         LATENCYFLEX: '1'
-        DXVK_LOG_LEVEL: info
-        VKD3D_DEBUG: warn
+        PROTON_USE_WINED3D: '1'
