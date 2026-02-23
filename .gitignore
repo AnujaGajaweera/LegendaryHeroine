@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Logs
+*.log
+buildsystems/logs/
+
+# C build artifacts
+*.o
+*.a
+*.so
+*.out
+
+# Runtime build outputs
+buildsystems/sources/
+buildsystems/build/
+buildsystems/artifacts/
+
+# Local tools build output
+tools/prefix_path_check
+
+# Editor/OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

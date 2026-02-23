@@ -1,0 +1,89 @@
+name: DaVinci Resolve Free (x86_64) (wine)
+game_slug: davinci-resolve
+version: davinci-resolve-x86_64
+slug: davinci-resolve-x86_64
+runner: wine
+
+script:
+  files:
+    - resolve_installer: "N/A:Select DaVinci Resolve installer (.exe or .run)"
+    - directml_dll: "N/A:Select directml.dll (x86_64)"
+    - nvcuda_dll: "N/A:Select nvcuda.dll (x86_64 experimental CUDA)"
+
+  game:
+    exe: "/home/anuja-gajaweera/Games/davinci-resolve-x86_64/drive_c/Program Files/Blackmagic Design/DaVinci Resolve/Resolve.exe"
+    prefix: "/home/anuja-gajaweera/Games/davinci-resolve-x86_64"
+    arch: win64
+    args: ""
+
+  installer:
+    - task:
+        name: create_prefix
+        prefix: "/home/anuja-gajaweera/Games/davinci-resolve-x86_64"
+        arch: win64
+
+    - task:
+        name: winetricks
+        prefix: "/home/anuja-gajaweera/Games/davinci-resolve-x86_64"
+        app: win10 vcrun2019 dx10 dx11
+
+    - copy:
+        src: directml_dll
+        dst: "/home/anuja-gajaweera/Games/davinci-resolve-x86_64/drive_c/windows/system32/directml.dll"
+
+    - copy:
+        src: nvcuda_dll
+        dst: "/home/anuja-gajaweera/Games/davinci-resolve-x86_64/drive_c/windows/system32/nvcuda.dll"
+
+    - task:
+        name: wineexec
+        prefix: "/home/anuja-gajaweera/Games/davinci-resolve-x86_64"
+        executable: resolve_installer
+        description: Installing DaVinci Resolve Free (x86_64)...
+
+    - write_file:
+        file: "/home/anuja-gajaweera/Games/davinci-resolve-x86_64/resolve.reg"
+        content: |
+          REGEDIT4
+
+          [HKEY_CURRENT_USER\Software\Wine\DllOverrides]
+          "directml"="native,builtin"
+          "nvcuda"="native,builtin"
+
+          [HKEY_CURRENT_USER\Software\Wine\Direct3D]
+          "renderer"="vulkan"
+          "csmt"="enabled"
+          "VideoMemorySize"="0"
+
+          [HKEY_CURRENT_USER\Control Panel\Desktop]
+          "LogPixels"=dword:00000060
+
+          [HKEY_CURRENT_USER\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers]
+          "C:\\Program Files\\Blackmagic Design\\DaVinci Resolve\\Resolve.exe"="~ HIGHDPIAWARE DISABLEDXMAXIMIZEDWINDOWEDMODE"
+
+          [HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile]
+          "SystemResponsiveness"=dword:0000000a
+    - task:
+        name: wineexec
+        prefix: "/home/anuja-gajaweera/Games/davinci-resolve-x86_64"
+        executable: regedit
+        args: /S "/home/anuja-gajaweera/Games/davinci-resolve-x86_64/resolve.reg"
+
+  wine:
+    version: resolve-wine
+    esync: true
+    fsync: false
+    overrides:
+      directml: native,builtin
+      nvcuda: native,builtin
+
+  system:
+    env:
+      WINEPREFIX: "/home/anuja-gajaweera/Games/davinci-resolve-x86_64"
+      WINEARCH: win64
+      WINEDEBUG: "-all"
+      WINEESYNC: "1"
+      __GL_THREADED_OPTIMIZATIONS: "1"
+      __GL_SHADER_DISK_CACHE: "1"
+      VK_ICD_FILENAMES: "/usr/share/vulkan/icd.d"
+      CUDA_EXPERIMENTAL: "1"
