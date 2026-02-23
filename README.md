@@ -115,4 +115,4 @@ See `buildsystems/README.md` for profiles, patch hooks, and artifact layout.
 
 ## License
 
-MIT. See `LICENSE`.
+LGPL-3.0-or-later. See `LICENSE`.
