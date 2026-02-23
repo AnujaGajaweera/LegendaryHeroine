@@ -54,7 +54,7 @@ Modular automation toolkit for preparing DaVinci Resolve Windows installers on L
 
 ```bash
 python3 resolve_lutris_installer.py --action generate --runner wine --target all --output-dir .
-# writes: davinci-resolve-all.yml
+# writes: davinci-resolve.yml
 ```
 
 ### 2. Generate combined YAML (Proton)
@@ -66,7 +66,7 @@ python3 resolve_lutris_installer.py \
   --proton-bin /path/to/proton \
   --target all \
   --output-dir .
-# writes: davinci-resolve-all.yml
+# writes: davinci-resolve.yml
 ```
 
 ### 3. Install one target + generate YAML

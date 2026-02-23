@@ -38,7 +38,7 @@ def install_release(
 
 def generate_yaml_files(targets: list[TargetConfig], prefix_root: Path, output_dir: Path, runner, wine_version: str, proton_version: str) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
-    out = output_dir / "davinci-resolve-all.yml"
+    out = output_dir / "davinci-resolve.yml"
     out.write_text(
         generate_combined_yaml(targets, prefix_root, runner, wine_version, proton_version),
         encoding="utf-8",
