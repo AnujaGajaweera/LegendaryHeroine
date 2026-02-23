@@ -70,7 +70,7 @@ script:
         args: /S "/home/anuja-gajaweera/Games/davinci-resolve-studio-x86_64/resolve.reg"
 
   wine:
-    version: resolve-wine
+    version: system
     esync: true
     fsync: false
     overrides:

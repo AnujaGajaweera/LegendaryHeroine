@@ -58,8 +58,8 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument("--prefix-root", type=Path, default=Path.home() / "Games")
     parser.add_argument("--output-dir", type=Path, default=Path.cwd())
-    parser.add_argument("--wine-version", default="resolve-wine")
-    parser.add_argument("--proton-version", default="proton-custom")
+    parser.add_argument("--wine-version", default="system")
+    parser.add_argument("--proton-version", default="system")
     parser.add_argument("--gpu-type", choices=["nvidia", "amd", "intel", "arm", "unknown"], default="unknown")
     parser.add_argument("--vk-icd", default=None)
     parser.add_argument("--log-file", type=Path, default=Path.cwd() / "resolve-installer.log")
