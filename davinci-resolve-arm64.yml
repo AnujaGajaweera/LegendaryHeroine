@@ -10,34 +10,34 @@ script:
     - directml_dll: "N/A:Select directml.dll (ARM64)"
 
   game:
-    exe: "/home/anuja-gajaweera/Games/davinci-resolve-arm64/drive_c/Program Files/Blackmagic Design/DaVinci Resolve/Resolve.exe"
-    prefix: "/home/anuja-gajaweera/Games/davinci-resolve-arm64"
+    exe: $GAMEDIR/drive_c/Program Files/Blackmagic Design/DaVinci Resolve/Resolve.exe
+    prefix: $GAMEDIR
     arch: arm64
     args: ""
 
   installer:
     - task:
         name: create_prefix
-        prefix: "/home/anuja-gajaweera/Games/davinci-resolve-arm64"
+        prefix: $GAMEDIR
         arch: arm64
 
     - task:
         name: winetricks
-        prefix: "/home/anuja-gajaweera/Games/davinci-resolve-arm64"
+        prefix: $GAMEDIR
         app: win10 vcrun2019 dx10 dx11
 
     - copy:
         src: directml_dll
-        dst: "/home/anuja-gajaweera/Games/davinci-resolve-arm64/drive_c/windows/system32/directml.dll"
+        dst: $GAMEDIR/drive_c/windows/system32/directml.dll
 
     - task:
         name: wineexec
-        prefix: "/home/anuja-gajaweera/Games/davinci-resolve-arm64"
+        prefix: $GAMEDIR
         executable: resolve_installer
         description: Installing DaVinci Resolve Free (ARM64)...
 
     - write_file:
-        file: "/home/anuja-gajaweera/Games/davinci-resolve-arm64/resolve.reg"
+        file: $GAMEDIR/resolve.reg
         content: |
           REGEDIT4
 
@@ -59,20 +59,20 @@ script:
           "SystemResponsiveness"=dword:0000000a
     - task:
         name: wineexec
-        prefix: "/home/anuja-gajaweera/Games/davinci-resolve-arm64"
+        prefix: $GAMEDIR
         executable: regedit
-        args: /S "/home/anuja-gajaweera/Games/davinci-resolve-arm64/resolve.reg"
+        args: /S $GAMEDIR/resolve.reg
 
   wine:
     version: system
     esync: true
     fsync: false
     overrides:
-      directml: native,builtin
+      directml: n,b
 
   system:
     env:
-      WINEPREFIX: "/home/anuja-gajaweera/Games/davinci-resolve-arm64"
+      WINEPREFIX: $GAMEDIR
       WINEARCH: arm64
       WINEDEBUG: "-all"
       WINEESYNC: "1"

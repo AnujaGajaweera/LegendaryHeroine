@@ -13,8 +13,8 @@ def generate_yaml(
     wine_version: str,
     proton_version: str,
 ) -> str:
-    target_root = prefix_root / target.target
-    effective_prefix = prefix_dir(prefix_root, target, runner)
+    target_root = "$GAMEDIR"
+    effective_prefix = "$GAMEDIR/pfx" if runner.runner == "proton" else "$GAMEDIR"
     exe = f"{effective_prefix}/drive_c/Program Files/Blackmagic Design/DaVinci Resolve/Resolve.exe"
     include_cuda = target.arch == "x86_64"
 
@@ -29,17 +29,17 @@ def generate_yaml(
     installer_lines = [
         "    - task:",
         "        name: create_prefix",
-        f"        prefix: \"{target_root}\"",
+        f"        prefix: {target_root}",
         f"        arch: {target.wine_arch}",
         "",
         "    - task:",
         "        name: winetricks",
-        f"        prefix: \"{target_root}\"",
+        f"        prefix: {target_root}",
         "        app: win10 vcrun2019 dx10 dx11",
         "",
         "    - copy:",
         "        src: directml_dll",
-        f"        dst: \"{effective_prefix}/drive_c/windows/system32/directml.dll\"",
+        f"        dst: {effective_prefix}/drive_c/windows/system32/directml.dll",
     ]
     if include_cuda:
         installer_lines.extend(
@@ -47,7 +47,7 @@ def generate_yaml(
                 "",
                 "    - copy:",
                 "        src: nvcuda_dll",
-                f"        dst: \"{effective_prefix}/drive_c/windows/system32/nvcuda.dll\"",
+                f"        dst: {effective_prefix}/drive_c/windows/system32/nvcuda.dll",
             ]
         )
     installer_lines.extend(
@@ -55,7 +55,7 @@ def generate_yaml(
             "",
             "    - task:",
             f"        name: {task_exec_name}",
-            f"        prefix: \"{target_root}\"",
+            f"        prefix: {target_root}",
             "        executable: resolve_installer",
             f"        description: Installing {target.display_name}...",
         ]
@@ -94,10 +94,10 @@ def generate_yaml(
         "    esync: true",
         "    fsync: false",
         "    overrides:",
-        "      directml: native,builtin",
+        "      directml: n,b",
     ]
     if include_cuda:
-        runner_block.append("      nvcuda: native,builtin")
+        runner_block.append("      nvcuda: n,b")
 
     if runner.runner == "proton":
         runner_block = [
@@ -118,8 +118,8 @@ def generate_yaml(
             *files_lines,
             "",
             "  game:",
-            f"    exe: \"{exe}\"",
-            f"    prefix: \"{target_root}\"",
+            f"    exe: {exe}",
+            f"    prefix: {target_root}",
             f"    arch: {target.wine_arch}",
             "    args: \"\"",
             "",
@@ -127,20 +127,20 @@ def generate_yaml(
             *installer_lines,
             "",
             "    - write_file:",
-            f"        file: \"{effective_prefix}/resolve.reg\"",
+            "        file: $GAMEDIR/resolve.reg",
             "        content: |",
             *reg_lines,
             "    - task:",
             f"        name: {task_exec_name}",
-            f"        prefix: \"{target_root}\"",
+            f"        prefix: {target_root}",
             "        executable: regedit",
-            f"        args: /S \"{effective_prefix}/resolve.reg\"",
+            "        args: /S $GAMEDIR/resolve.reg",
             "",
             *runner_block,
             "",
             "  system:",
             "    env:",
-            f"      WINEPREFIX: \"{effective_prefix}\"",
+            f"      WINEPREFIX: {effective_prefix}",
             f"      WINEARCH: {target.wine_arch}",
             "      WINEDEBUG: \"-all\"",
             "      WINEESYNC: \"1\"",
