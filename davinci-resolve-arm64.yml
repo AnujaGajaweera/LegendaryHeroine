@@ -6,7 +6,7 @@ runner: wine
 
 script:
   files:
-    - resolve_installer: "N/A:Select DaVinci Resolve installer (.exe or .run)"
+    - resolve_installer: "N/A:Select DaVinci Resolve Windows installer (.exe)"
     - directml_dll: "N/A:Select directml.dll (ARM64)"
 
   game:
@@ -22,9 +22,14 @@ script:
         arch: arm64
 
     - task:
+        name: execute
+        command: /bin/bash
+        args: -lc "clinfo >/dev/null 2>&1 || echo '[WARN] OpenCL not detected in Lutris install context; Resolve GPU compute may fail.'"
+
+    - task:
         name: winetricks
         prefix: $GAMEDIR
-        app: win10 vcrun2019 dx10 dx11
+        app: win10 vcrun2019
 
     - copy:
         src: directml_dll
@@ -64,9 +69,11 @@ script:
         args: /S $GAMEDIR/resolve.reg
 
   wine:
-    version: system
     esync: true
     fsync: false
+    dxvk: true
+    vkd3d: true
+    latencyflex: true
     overrides:
       directml: n,b
 
@@ -77,5 +84,8 @@ script:
       WINEDEBUG: "-all"
       WINEESYNC: "1"
       __GL_THREADED_OPTIMIZATIONS: "1"
-      __GL_SHADER_DISK_CACHE: "1"
+      __GL_DISK_CACHE: "1"
       VK_ICD_FILENAMES: "/usr/share/vulkan/icd.d"
+      DXVK_LOG_LEVEL: info
+      VKD3D_DEBUG: warn
+      LATENCYFLEX: "1"

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Iterable
 
-from .envcfg import prefix_dir
 from .models import RunnerConfig, TargetConfig
 
 
@@ -19,11 +19,9 @@ def generate_yaml(
     include_cuda = target.arch == "x86_64"
 
     files_lines = [
-        '    - resolve_installer: "N/A:Select DaVinci Resolve installer (.exe or .run)"',
+        '    - resolve_installer: "N/A:Select DaVinci Resolve Windows installer (.exe)"',
         f'    - directml_dll: "N/A:Select directml.dll ({target.arch})"',
     ]
-    if include_cuda:
-        files_lines.append('    - nvcuda_dll: "N/A:Select nvcuda.dll (x86_64 experimental CUDA)"')
 
     task_exec_name = "wineexec" if runner.runner == "wine" else "protonexec"
     installer_lines = [
@@ -33,23 +31,19 @@ def generate_yaml(
         f"        arch: {target.wine_arch}",
         "",
         "    - task:",
+        "        name: execute",
+        "        command: /bin/bash",
+        "        args: -lc \"clinfo >/dev/null 2>&1 || echo '[WARN] OpenCL not detected in Lutris install context; Resolve GPU compute may fail.'\"",
+        "",
+        "    - task:",
         "        name: winetricks",
         f"        prefix: {target_root}",
-        "        app: win10 vcrun2019 dx10 dx11",
+        "        app: win10 vcrun2019",
         "",
         "    - copy:",
         "        src: directml_dll",
         f"        dst: {effective_prefix}/drive_c/windows/system32/directml.dll",
     ]
-    if include_cuda:
-        installer_lines.extend(
-            [
-                "",
-                "    - copy:",
-                "        src: nvcuda_dll",
-                f"        dst: {effective_prefix}/drive_c/windows/system32/nvcuda.dll",
-            ]
-        )
     installer_lines.extend(
         [
             "",
@@ -90,20 +84,27 @@ def generate_yaml(
 
     runner_block = [
         "  wine:",
-        f"    version: {wine_version}",
-        "    esync: true",
-        "    fsync: false",
-        "    overrides:",
-        "      directml: n,b",
     ]
+    if wine_version and wine_version.lower() != "none":
+        runner_block.append(f"    version: {wine_version}")
+    runner_block.extend(
+        [
+            "    esync: true",
+            "    fsync: false",
+            "    dxvk: true",
+            "    vkd3d: true",
+            "    latencyflex: true",
+            "    overrides:",
+            "      directml: n,b",
+        ]
+    )
     if include_cuda:
         runner_block.append("      nvcuda: n,b")
 
     if runner.runner == "proton":
-        runner_block = [
-            "  proton:",
-            f"    version: {proton_version}",
-        ]
+        runner_block = ["  proton:"]
+        if proton_version and proton_version.lower() != "none":
+            runner_block.append(f"    version: {proton_version}")
 
     yaml_text = "\n".join(
         [
@@ -145,8 +146,11 @@ def generate_yaml(
             "      WINEDEBUG: \"-all\"",
             "      WINEESYNC: \"1\"",
             "      __GL_THREADED_OPTIMIZATIONS: \"1\"",
-            "      __GL_SHADER_DISK_CACHE: \"1\"",
+            "      __GL_DISK_CACHE: \"1\"",
             "      VK_ICD_FILENAMES: \"/usr/share/vulkan/icd.d\"",
+            "      DXVK_LOG_LEVEL: info",
+            "      VKD3D_DEBUG: warn",
+            "      LATENCYFLEX: \"1\"",
         ]
     )
 
@@ -154,3 +158,22 @@ def generate_yaml(
         yaml_text += "\n      CUDA_EXPERIMENTAL: \"1\""
 
     return yaml_text + "\n"
+
+
+def generate_combined_yaml(
+    targets: Iterable[TargetConfig],
+    prefix_root: Path,
+    runner: RunnerConfig,
+    wine_version: str,
+    proton_version: str,
+) -> str:
+    """Return a single multi-document YAML string containing all targets."""
+    docs = [
+        "# Combined Lutris installers for all DaVinci Resolve variants\n"
+        "# Contains multiple YAML documents separated by ---\n"
+    ]
+    for cfg in targets:
+        docs.append("---\n")
+        docs.append(generate_yaml(cfg, prefix_root, runner, wine_version, proton_version))
+        docs.append("\n")
+    return "".join(docs)

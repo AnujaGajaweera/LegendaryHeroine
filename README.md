@@ -12,12 +12,14 @@ Modular automation toolkit for preparing DaVinci Resolve Windows installers on L
 - Supports runners:
   - `wine` (custom builds like `resolve-wine`)
   - `proton`
+- Uses DXVK + VKD3D + LatencyFleX tuning in generated configs
 - Creates per-target prefixes
-- Installs dependencies (`win10`, `vcrun2019`, `dx10`, `dx11`)
+- Installs dependencies (`win10`, `vcrun2019`)
 - Injects DLLs:
   - `directml.dll` (all)
-  - `nvcuda.dll` (x86_64 targets)
+  - `nvcuda.dll` (x86_64 optional, only if needed)
 - Applies registry tweaks for DPI and stability
+- Runs OpenCL warning check in Lutris installer context (warn-only, does not block install)
 - Generates Lutris-ready YAML files
 - Logs each step and fails with clear errors
 
@@ -32,8 +34,8 @@ Modular automation toolkit for preparing DaVinci Resolve Windows installers on L
   - `yamlgen.py`: Lutris YAML generator
   - `models.py`: target and runner dataclasses
   - `logging_utils.py`: logger setup
-- `tools/prefix_path_check.c`: optional C helper
-- `tools/build_helpers.sh`: builds C helper
+- `tools/prefix_path_check.py`: optional Python helper
+- `tools/build_helpers.sh`: checks Python helper
 - `buildsystems/`: custom Wine/Proton runtime build systems
 
 ## Requirements
@@ -42,19 +44,20 @@ Modular automation toolkit for preparing DaVinci Resolve Windows installers on L
 - Python 3.10+
 - `wine` and/or `proton`
 - `winetricks`
-- DaVinci Resolve installer (`.exe` or `.run`)
+- DaVinci Resolve Windows installer (`.exe`)
 - `directml.dll` (matching architecture)
-- `nvcuda.dll` (x86_64 targets)
+- `nvcuda.dll` (optional for x86_64)
 
 ## Quick Start
 
-### 1. Generate all YAML files (Wine)
+### 1. Generate combined YAML (Wine)
 
 ```bash
 python3 resolve_lutris_installer.py --action generate --runner wine --target all --output-dir .
+# writes: davinci-resolve-all.yml
 ```
 
-### 2. Generate all YAML files (Proton)
+### 2. Generate combined YAML (Proton)
 
 ```bash
 python3 resolve_lutris_installer.py \
@@ -63,6 +66,7 @@ python3 resolve_lutris_installer.py \
   --proton-bin /path/to/proton \
   --target all \
   --output-dir .
+# writes: davinci-resolve-all.yml
 ```
 
 ### 3. Install one target + generate YAML
@@ -74,8 +78,13 @@ python3 resolve_lutris_installer.py \
   --target davinci-resolve-x86_64 \
   --installer /path/to/Resolve.exe \
   --directml-dll /path/to/directml.dll \
-  --nvcuda-dll /path/to/nvcuda.dll \
   --gpu-type nvidia
+```
+
+### 4. Print Lutris cache path candidates
+
+```bash
+python3 resolve_lutris_installer.py --print-lutris-paths
 ```
 
 ## Environment Variables Applied
@@ -83,14 +92,17 @@ python3 resolve_lutris_installer.py \
 - `WINEDEBUG=-all`
 - `WINEESYNC=1`
 - `__GL_THREADED_OPTIMIZATIONS=1`
-- `__GL_SHADER_DISK_CACHE=1`
+- `__GL_DISK_CACHE=1`
 - `VK_ICD_FILENAMES=/usr/share/vulkan/icd.d`
+- `DXVK_LOG_LEVEL=info`
+- `VKD3D_DEBUG=warn`
+- `LATENCYFLEX=1`
 
-## Build Optional C Helper
+## Check Optional Python Helper
 
 ```bash
 ./tools/build_helpers.sh
-./tools/prefix_path_check /path/to/prefix
+./tools/prefix_path_check.py /path/to/prefix
 ```
 
 ## Build Custom Runtimes (resolve-wine / resolve-proton)

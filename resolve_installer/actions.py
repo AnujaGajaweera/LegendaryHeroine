@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import Dict
 
@@ -35,7 +36,8 @@ def install_dependencies(winetricks_bin: str, runner: RunnerConfig, env: Dict[st
         proton_cmd = f"{runner.proton_bin} run"
         dep_env["WINE"] = proton_cmd
         dep_env["WINE64"] = proton_cmd
-    run_cmd([winetricks_bin, "-q", "win10", "vcrun2019", "dx10", "dx11"], dep_env, "install-dependencies")
+    # Proton winetricks does not support "dx10"/"dx11" verbs; keep to stable verbs.
+    run_cmd([winetricks_bin, "-q", "win10", "vcrun2019"], dep_env, "install-dependencies")
 
 
 def copy_dlls(
@@ -43,6 +45,7 @@ def copy_dlls(
     target: TargetConfig,
     runner: RunnerConfig,
     directml: Path,
+    opencl: Path | None,
     nvcuda: Path | None,
     gpu_type: str,
 ) -> None:
@@ -55,14 +58,47 @@ def copy_dlls(
     shutil.copy2(directml, system32 / "directml.dll")
     logging.info("Copied directml.dll to %s", system32)
 
+    dst_opencl = system32 / "opencl.dll"
+    if dst_opencl.exists():
+        logging.info("opencl.dll already exists at %s, skipping copy", dst_opencl)
+    else:
+        source_opencl = opencl
+        if source_opencl is None and sys.stdin.isatty():
+            user_input = input(
+                "opencl.dll not found in prefix. Enter path to opencl.dll (or press Enter to skip): "
+            ).strip()
+            if user_input:
+                source_opencl = Path(user_input).expanduser()
+
+        if source_opencl is None:
+            logging.warning("opencl.dll not provided; OpenCL features may not work.")
+        elif not source_opencl.exists():
+            logging.warning("Provided opencl.dll path does not exist: %s", source_opencl)
+        else:
+            shutil.copy2(source_opencl, dst_opencl)
+            logging.info("Copied opencl.dll to %s", system32)
+
     if target.arch == "x86_64":
-        if gpu_type != "nvidia":
-            logging.info("x86_64 target selected; nvcuda.dll is optional experimental (gpu-type=%s)", gpu_type)
+        dst_nvcuda = system32 / "nvcuda.dll"
+        if dst_nvcuda.exists():
+            logging.info("nvcuda.dll already exists at %s, skipping copy", dst_nvcuda)
+            return
         if nvcuda is None:
-            raise RuntimeError("x86_64 target requires --nvcuda-dll per requested workflow")
+            logging.warning(
+                "nvcuda.dll not found/provided; continuing without CUDA. "
+                "Resolve may fall back to non-CUDA GPU paths."
+            )
+            return
         if not nvcuda.exists():
-            raise RuntimeError(f"nvcuda.dll not found: {nvcuda}")
-        shutil.copy2(nvcuda, system32 / "nvcuda.dll")
+            logging.warning(
+                "nvcuda.dll path was provided but file does not exist: %s. "
+                "Continuing without CUDA.",
+                nvcuda,
+            )
+            return
+        if gpu_type != "nvidia":
+            logging.info("Copying optional nvcuda.dll while gpu-type=%s (experimental)", gpu_type)
+        shutil.copy2(nvcuda, dst_nvcuda)
         logging.info("Copied nvcuda.dll to %s", system32)
 
 
@@ -107,6 +143,8 @@ def run_installer(installer: Path, runner: RunnerConfig, env: Dict[str, str]) ->
     if not installer.exists():
         raise RuntimeError(f"Installer not found: {installer}")
     if installer.suffix.lower() == ".run":
-        run_cmd(["bash", str(installer)], env, "run-installer-run")
-    else:
-        run_cmd(runner_exec(runner, [str(installer)]), env, "run-installer-exe")
+        raise RuntimeError(
+            f"Unsupported installer format: {installer}. "
+            "Use the Windows DaVinci Resolve installer (.exe), not the Linux .run package."
+        )
+    run_cmd(runner_exec(runner, [str(installer)]), env, "run-installer-exe")

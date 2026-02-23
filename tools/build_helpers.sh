@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cc -O2 -Wall -Wextra -o tools/prefix_path_check tools/prefix_path_check.c
+
+python3 -m py_compile tools/prefix_path_check.py
+echo "Python helper check complete: tools/prefix_path_check.py"

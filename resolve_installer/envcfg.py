@@ -25,8 +25,11 @@ def base_env(
     env["WINEDEBUG"] = "-all"
     env["WINEESYNC"] = "1"
     env["__GL_THREADED_OPTIMIZATIONS"] = "1"
-    env["__GL_SHADER_DISK_CACHE"] = "1"
+    env["__GL_DISK_CACHE"] = "1"
     env["VK_ICD_FILENAMES"] = vk_icd if vk_icd else "/usr/share/vulkan/icd.d"
+    env["DXVK_LOG_LEVEL"] = "info"
+    env["VKD3D_DEBUG"] = "warn"
+    env["LATENCYFLEX"] = "1"
     if runner.runner == "proton":
         env["STEAM_COMPAT_DATA_PATH"] = str(target_prefix)
     return env
