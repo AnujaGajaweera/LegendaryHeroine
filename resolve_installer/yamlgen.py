@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Iterable
 
+import yaml
+
 from .models import RunnerConfig, TargetConfig
 
 
@@ -167,13 +169,10 @@ def generate_combined_yaml(
     wine_version: str,
     proton_version: str,
 ) -> str:
-    """Return a single multi-document YAML string containing all targets."""
-    docs = [
-        "# Combined Lutris installers for all DaVinci Resolve variants\n"
-        "# Contains multiple YAML documents separated by ---\n"
-    ]
+    """Return a single-document YAML list containing all targets."""
+    installers = []
     for cfg in targets:
-        docs.append("---\n")
-        docs.append(generate_yaml(cfg, prefix_root, runner, wine_version, proton_version))
-        docs.append("\n")
-    return "".join(docs)
+        installers.append(
+            yaml.safe_load(generate_yaml(cfg, prefix_root, runner, wine_version, proton_version))
+        )
+    return yaml.safe_dump(installers, sort_keys=False, allow_unicode=False)
