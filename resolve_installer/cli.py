@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 from .actions import apply_registry, copy_dlls, create_prefix, install_dependencies, run_installer
-from .envcfg import base_env
+from .envcfg import base_env, detect_vulkan_support
 from .logging_utils import setup_logging
 from .lutris_paths import detect_lutris_cache_dir, lutris_cache_candidates
 from .models import TARGETS, TargetConfig
@@ -25,8 +25,9 @@ def install_release(
     winetricks_bin: str,
     gpu_type: str,
     vk_icd: str | None,
+    vulkan_supported: bool,
 ) -> None:
-    env = base_env(prefix_root, cfg, runner, vk_icd)
+    env = base_env(prefix_root, cfg, runner, vk_icd, vulkan_supported)
     logging.info("Installing %s with runner=%s", cfg.target, runner.runner)
     create_prefix(cfg, prefix_root, runner, env)
     install_dependencies(winetricks_bin, runner, env)
@@ -36,11 +37,19 @@ def install_release(
     logging.info("Install sequence complete for %s", cfg.target)
 
 
-def generate_yaml_files(targets: list[TargetConfig], prefix_root: Path, output_dir: Path, runner, wine_version: str, proton_version: str) -> None:
+def generate_yaml_files(
+    targets: list[TargetConfig],
+    prefix_root: Path,
+    output_dir: Path,
+    runner,
+    wine_version: str,
+    proton_version: str,
+    vulkan_supported: bool,
+) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     out = output_dir / "davinci-resolve.yml"
     out.write_text(
-        generate_combined_yaml(targets, prefix_root, runner, wine_version, proton_version),
+        generate_combined_yaml(targets, prefix_root, runner, wine_version, proton_version, vulkan_supported),
         encoding="utf-8",
     )
     logging.info("Generated %s", out)
@@ -88,6 +97,8 @@ def main() -> int:
         return 0
 
     runner = select_runner(args.runner, args.wine_bin, args.proton_bin)
+    vulkan_supported = detect_vulkan_support()
+    logging.info("Vulkan support detected: %s", vulkan_supported)
 
     targets = list(TARGETS.values()) if args.target == "all" else [TARGETS[args.target]]
 
@@ -111,10 +122,19 @@ def main() -> int:
                 winetricks_bin=args.winetricks_bin,
                 gpu_type=args.gpu_type,
                 vk_icd=args.vk_icd,
+                vulkan_supported=vulkan_supported,
             )
 
         if args.action in ("generate", "both"):
-            generate_yaml_files(targets, args.prefix_root, args.output_dir, runner, args.wine_version, args.proton_version)
+            generate_yaml_files(
+                targets,
+                args.prefix_root,
+                args.output_dir,
+                runner,
+                args.wine_version,
+                args.proton_version,
+                vulkan_supported,
+            )
 
     except Exception as exc:
         logging.error("Failure: %s", exc)

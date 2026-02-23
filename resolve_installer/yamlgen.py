@@ -14,6 +14,7 @@ def generate_yaml(
     runner: RunnerConfig,
     wine_version: str,
     proton_version: str,
+    vulkan_supported: bool,
 ) -> str:
     target_root = "$GAMEDIR"
     effective_prefix = "$GAMEDIR/pfx" if runner.runner == "proton" else "$GAMEDIR"
@@ -32,8 +33,7 @@ def generate_yaml(
         f"        prefix: {target_root}",
         f"        arch: {target.wine_arch}",
         "",
-        "    - task:",
-        "        name: execute",
+        "    - execute:",
         "        command: /bin/bash",
         "        args: -lc \"clinfo >/dev/null 2>&1 || echo '[WARN] OpenCL not detected in Lutris install context; Resolve GPU compute may fail.'\"",
         "",
@@ -93,8 +93,8 @@ def generate_yaml(
         [
             "    esync: true",
             "    fsync: false",
-            "    dxvk: true",
-            "    vkd3d: true",
+            f"    dxvk: {'true' if vulkan_supported else 'false'}",
+            f"    vkd3d: {'true' if vulkan_supported else 'false'}",
             "    latencyflex: true",
             "    overrides:",
             "      directml: n,b",
@@ -107,6 +107,26 @@ def generate_yaml(
         runner_block = ["  proton:"]
         if proton_version and proton_version.lower() != "none":
             runner_block.append(f"    version: {proton_version}")
+
+    env_lines = [
+        f"      WINEPREFIX: {effective_prefix}",
+        f"      WINEARCH: {target.wine_arch}",
+        "      WINEDEBUG: \"-all\"",
+        "      WINEESYNC: \"1\"",
+        "      __GL_THREADED_OPTIMIZATIONS: \"1\"",
+        "      __GL_DISK_CACHE: \"1\"",
+        "      VK_ICD_FILENAMES: \"/usr/share/vulkan/icd.d\"",
+        "      LATENCYFLEX: \"1\"",
+    ]
+    if vulkan_supported:
+        env_lines.extend(
+            [
+                "      DXVK_LOG_LEVEL: info",
+                "      VKD3D_DEBUG: warn",
+            ]
+        )
+    else:
+        env_lines.append("      PROTON_USE_WINED3D: \"1\"")
 
     yaml_text = "\n".join(
         [
@@ -143,16 +163,7 @@ def generate_yaml(
             "",
             "  system:",
             "    env:",
-            f"      WINEPREFIX: {effective_prefix}",
-            f"      WINEARCH: {target.wine_arch}",
-            "      WINEDEBUG: \"-all\"",
-            "      WINEESYNC: \"1\"",
-            "      __GL_THREADED_OPTIMIZATIONS: \"1\"",
-            "      __GL_DISK_CACHE: \"1\"",
-            "      VK_ICD_FILENAMES: \"/usr/share/vulkan/icd.d\"",
-            "      DXVK_LOG_LEVEL: info",
-            "      VKD3D_DEBUG: warn",
-            "      LATENCYFLEX: \"1\"",
+            *env_lines,
         ]
     )
 
@@ -168,11 +179,14 @@ def generate_combined_yaml(
     runner: RunnerConfig,
     wine_version: str,
     proton_version: str,
+    vulkan_supported: bool,
 ) -> str:
     """Return a single-document YAML list containing all targets."""
     installers = []
     for cfg in targets:
         installers.append(
-            yaml.safe_load(generate_yaml(cfg, prefix_root, runner, wine_version, proton_version))
+            yaml.safe_load(
+                generate_yaml(cfg, prefix_root, runner, wine_version, proton_version, vulkan_supported)
+            )
         )
     return yaml.safe_dump(installers, sort_keys=False, allow_unicode=False)

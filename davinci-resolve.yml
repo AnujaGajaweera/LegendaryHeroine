@@ -17,8 +17,7 @@
         name: create_prefix
         prefix: $GAMEDIR
         arch: win64
-    - task:
-        name: execute
+    - execute:
         command: /bin/bash
         args: -lc "clinfo >/dev/null 2>&1 || echo '[WARN] OpenCL not detected in Lutris
           install context; Resolve GPU compute may fail.'"
@@ -79,8 +78,8 @@
     wine:
       esync: true
       fsync: false
-      dxvk: true
-      vkd3d: true
+      dxvk: false
+      vkd3d: false
       latencyflex: true
       overrides:
         directml: n,b
@@ -94,9 +93,8 @@
         __GL_THREADED_OPTIMIZATIONS: '1'
         __GL_DISK_CACHE: '1'
         VK_ICD_FILENAMES: /usr/share/vulkan/icd.d
-        DXVK_LOG_LEVEL: info
-        VKD3D_DEBUG: warn
         LATENCYFLEX: '1'
+        PROTON_USE_WINED3D: '1'
         CUDA_EXPERIMENTAL: '1'
 - name: DaVinci Resolve Free (ARM64) (wine)
   game_slug: davinci-resolve
@@ -117,8 +115,7 @@
         name: create_prefix
         prefix: $GAMEDIR
         arch: arm64
-    - task:
-        name: execute
+    - execute:
         command: /bin/bash
         args: -lc "clinfo >/dev/null 2>&1 || echo '[WARN] OpenCL not detected in Lutris
           install context; Resolve GPU compute may fail.'"
@@ -177,8 +174,8 @@
     wine:
       esync: true
       fsync: false
-      dxvk: true
-      vkd3d: true
+      dxvk: false
+      vkd3d: false
       latencyflex: true
       overrides:
         directml: n,b
@@ -191,9 +188,8 @@
         __GL_THREADED_OPTIMIZATIONS: '1'
         __GL_DISK_CACHE: '1'
         VK_ICD_FILENAMES: /usr/share/vulkan/icd.d
-        DXVK_LOG_LEVEL: info
-        VKD3D_DEBUG: warn
         LATENCYFLEX: '1'
+        PROTON_USE_WINED3D: '1'
 - name: DaVinci Resolve Studio (x86_64) (wine)
   game_slug: davinci-resolve-studio
   version: davinci-resolve-studio-x86_64
@@ -213,8 +209,7 @@
         name: create_prefix
         prefix: $GAMEDIR
         arch: win64
-    - task:
-        name: execute
+    - execute:
         command: /bin/bash
         args: -lc "clinfo >/dev/null 2>&1 || echo '[WARN] OpenCL not detected in Lutris
           install context; Resolve GPU compute may fail.'"
@@ -275,8 +270,8 @@
     wine:
       esync: true
       fsync: false
-      dxvk: true
-      vkd3d: true
+      dxvk: false
+      vkd3d: false
       latencyflex: true
       overrides:
         directml: n,b
@@ -290,9 +285,8 @@
         __GL_THREADED_OPTIMIZATIONS: '1'
         __GL_DISK_CACHE: '1'
         VK_ICD_FILENAMES: /usr/share/vulkan/icd.d
-        DXVK_LOG_LEVEL: info
-        VKD3D_DEBUG: warn
         LATENCYFLEX: '1'
+        PROTON_USE_WINED3D: '1'
         CUDA_EXPERIMENTAL: '1'
 - name: DaVinci Resolve Studio (ARM64) (wine)
   game_slug: davinci-resolve-studio
@@ -313,8 +307,7 @@
         name: create_prefix
         prefix: $GAMEDIR
         arch: arm64
-    - task:
-        name: execute
+    - execute:
         command: /bin/bash
         args: -lc "clinfo >/dev/null 2>&1 || echo '[WARN] OpenCL not detected in Lutris
           install context; Resolve GPU compute may fail.'"
@@ -373,8 +366,8 @@
     wine:
       esync: true
       fsync: false
-      dxvk: true
-      vkd3d: true
+      dxvk: false
+      vkd3d: false
       latencyflex: true
       overrides:
         directml: n,b
@@ -387,6 +380,5 @@
         __GL_THREADED_OPTIMIZATIONS: '1'
         __GL_DISK_CACHE: '1'
         VK_ICD_FILENAMES: /usr/share/vulkan/icd.d
-        DXVK_LOG_LEVEL: info
-        VKD3D_DEBUG: warn
         LATENCYFLEX: '1'
+        PROTON_USE_WINED3D: '1'
