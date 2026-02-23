@@ -44,7 +44,7 @@ def generate_yaml(
         "",
         "    - copy:",
         "        src: directml_dll",
-        f"        dst: {effective_prefix}/drive_c/windows/system32/directml.dll",
+        f"        dst: {effective_prefix}/drive_c/windows/system32/",
     ]
     installer_lines.extend(
         [

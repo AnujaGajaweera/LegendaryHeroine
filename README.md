@@ -1,64 +1,66 @@
-# DaVinci Resolve Lutris Installer (Wine/Proton)
+# DaVinci Resolve on Linux (Easy Guide)
 
-Modular automation toolkit for preparing DaVinci Resolve Windows installers on Linux with Wine or Proton, and generating architecture-specific Lutris YAML installers.
+This project helps you install **DaVinci Resolve (Windows version)** on Linux using **Lutris + Wine/Proton**.
 
-## Features
+It is designed for non-technical users:
+- fewer manual steps
+- clear warnings instead of cryptic failures
+- one installer YAML file for Lutris import
 
-- Supports 4 targets:
+## What You Get
+
+- Support for 4 DaVinci targets:
   - `davinci-resolve-x86_64`
   - `davinci-resolve-arm64`
   - `davinci-resolve-studio-x86_64`
   - `davinci-resolve-studio-arm64`
-- Supports runners:
-  - `wine` (custom builds like `resolve-wine`)
-  - `proton`
-- Uses DXVK + VKD3D + LatencyFleX tuning in generated configs
-- Creates per-target prefixes
-- Installs dependencies (`win10`, `vcrun2019`)
-- Injects DLLs:
-  - `directml.dll` (all)
-  - `nvcuda.dll` (x86_64 optional, only if needed)
-- Applies registry tweaks for DPI and stability
-- Runs OpenCL warning check in Lutris installer context (warn-only, does not block install)
-- Generates Lutris-ready YAML files
-- Logs each step and fails with clear errors
+- One output installer file: `davinci-resolve.yml`
+- Works with both `wine` and `proton` runners
+- Auto fallback if Vulkan is not supported (DXVK/VKD3D disabled automatically)
 
-## Project Structure
+## What You Need
 
-- `resolve_lutris_installer.py`: Thin entrypoint
-- `resolve_installer/`: Python modules
-  - `cli.py`: argument parsing and orchestration
-  - `runner.py`: runner selection and command wrapping
-  - `envcfg.py`: environment and prefix logic
-  - `actions.py`: prefix/deps/DLL/registry/install actions
-  - `yamlgen.py`: Lutris YAML generator
-  - `models.py`: target and runner dataclasses
-  - `logging_utils.py`: logger setup
-- `tools/prefix_path_check.py`: optional Python helper
-- `tools/build_helpers.sh`: checks Python helper
-- `buildsystems/`: custom Wine/Proton runtime build systems
-
-## Requirements
-
-- Linux
-- Python 3.10+
-- `wine` and/or `proton`
+Required:
+- Linux desktop
+- Lutris
+- Wine and/or Proton in Lutris
 - `winetricks`
-- DaVinci Resolve Windows installer (`.exe`)
-- `directml.dll` (matching architecture)
-- `nvcuda.dll` (optional for x86_64)
+- DaVinci Resolve **Windows** installer (`.exe`)
+- `directml.dll` (required)
+
+Optional:
+- `opencl.dll` (you can provide it when prompted)
+- `nvcuda.dll` (optional for NVIDIA/CUDA on x86_64)
 
 ## Quick Start
 
-### 1. Generate combined YAML (Wine)
+### 1. Generate installer file
 
 ```bash
 python3 resolve_lutris_installer.py --action generate --runner wine --target all --output-dir .
-# writes: davinci-resolve.yml
 ```
 
-### 2. Generate combined YAML (Proton)
+This creates:
+- `davinci-resolve.yml`
 
+### 2. Import in Lutris
+
+1. Open Lutris
+2. Click `+`
+3. Choose `Install from a local install script`
+4. Select `davinci-resolve.yml`
+5. Pick the Resolve variant you want
+
+### 3. Follow prompts
+
+- Select Resolve `.exe` installer when asked
+- Select `directml.dll`
+- If `opencl.dll` is missing, the script can ask for a path
+- `nvcuda.dll` is optional; if missing, installation continues with warning
+
+## Useful Commands
+
+Generate using Proton profile:
 ```bash
 python3 resolve_lutris_installer.py \
   --action generate \
@@ -66,64 +68,22 @@ python3 resolve_lutris_installer.py \
   --proton-bin /path/to/proton \
   --target all \
   --output-dir .
-# writes: davinci-resolve.yml
 ```
 
-### 3. Install one target + generate YAML
-
-```bash
-python3 resolve_lutris_installer.py \
-  --action both \
-  --runner wine \
-  --target davinci-resolve-x86_64 \
-  --installer /path/to/Resolve.exe \
-  --directml-dll /path/to/directml.dll \
-  --gpu-type nvidia
-```
-
-### 4. Print Lutris cache path candidates
-
+Show Lutris cache path candidates:
 ```bash
 python3 resolve_lutris_installer.py --print-lutris-paths
 ```
 
-## Environment Variables Applied
+## If Something Fails
 
-- `WINEDEBUG=-all`
-- `WINEESYNC=1`
-- `__GL_THREADED_OPTIMIZATIONS=1`
-- `__GL_DISK_CACHE=1`
-- `VK_ICD_FILENAMES=/usr/share/vulkan/icd.d`
-- `DXVK_LOG_LEVEL=info`
-- `VKD3D_DEBUG=warn`
-- `LATENCYFLEX=1`
+- `.run` installer is not supported (use `.exe` only)
+- If Vulkan is unavailable, DXVK/VKD3D are automatically disabled
+- If optional DLLs are missing, you will get warnings, not hard failure
 
-## Check Optional Python Helper
+## For Developers
 
-```bash
-./tools/build_helpers.sh
-./tools/prefix_path_check.py /path/to/prefix
-```
-
-## Build Custom Runtimes (resolve-wine / resolve-proton)
-
-```bash
-# resolve-wine
-./buildsystems/build_runtime.sh --runtime wine --arch x86_64
-./buildsystems/build_runtime.sh --runtime wine --arch arm64
-
-# resolve-proton
-./buildsystems/build_runtime.sh --runtime proton --arch x86_64
-./buildsystems/build_runtime.sh --runtime proton --arch arm64
-```
-
-See `buildsystems/README.md` for profiles, patch hooks, and artifact layout.
-
-## Notes
-
-- Targets are intentionally explicit and separate.
-- No automatic host architecture switching is performed.
-- x86_64 on ARM64 may require external emulation stacks (e.g., box64/FEX).
+Technical details are documented in `DEVELOPER.md`.
 
 ## License
 

@@ -27,7 +27,7 @@
         app: win10 vcrun2019
     - copy:
         src: directml_dll
-        dst: $GAMEDIR/drive_c/windows/system32/directml.dll
+        dst: $GAMEDIR/drive_c/windows/system32/
     - task:
         name: wineexec
         prefix: $GAMEDIR
@@ -78,8 +78,8 @@
     wine:
       esync: true
       fsync: false
-      dxvk: false
-      vkd3d: false
+      dxvk: true
+      vkd3d: true
       latencyflex: true
       overrides:
         directml: n,b
@@ -94,7 +94,8 @@
         __GL_DISK_CACHE: '1'
         VK_ICD_FILENAMES: /usr/share/vulkan/icd.d
         LATENCYFLEX: '1'
-        PROTON_USE_WINED3D: '1'
+        DXVK_LOG_LEVEL: info
+        VKD3D_DEBUG: warn
         CUDA_EXPERIMENTAL: '1'
 - name: DaVinci Resolve Free (ARM64) (wine)
   game_slug: davinci-resolve
@@ -125,7 +126,7 @@
         app: win10 vcrun2019
     - copy:
         src: directml_dll
-        dst: $GAMEDIR/drive_c/windows/system32/directml.dll
+        dst: $GAMEDIR/drive_c/windows/system32/
     - task:
         name: wineexec
         prefix: $GAMEDIR
@@ -174,8 +175,8 @@
     wine:
       esync: true
       fsync: false
-      dxvk: false
-      vkd3d: false
+      dxvk: true
+      vkd3d: true
       latencyflex: true
       overrides:
         directml: n,b
@@ -189,7 +190,8 @@
         __GL_DISK_CACHE: '1'
         VK_ICD_FILENAMES: /usr/share/vulkan/icd.d
         LATENCYFLEX: '1'
-        PROTON_USE_WINED3D: '1'
+        DXVK_LOG_LEVEL: info
+        VKD3D_DEBUG: warn
 - name: DaVinci Resolve Studio (x86_64) (wine)
   game_slug: davinci-resolve-studio
   version: davinci-resolve-studio-x86_64
@@ -219,7 +221,7 @@
         app: win10 vcrun2019
     - copy:
         src: directml_dll
-        dst: $GAMEDIR/drive_c/windows/system32/directml.dll
+        dst: $GAMEDIR/drive_c/windows/system32/
     - task:
         name: wineexec
         prefix: $GAMEDIR
@@ -270,8 +272,8 @@
     wine:
       esync: true
       fsync: false
-      dxvk: false
-      vkd3d: false
+      dxvk: true
+      vkd3d: true
       latencyflex: true
       overrides:
         directml: n,b
@@ -286,7 +288,8 @@
         __GL_DISK_CACHE: '1'
         VK_ICD_FILENAMES: /usr/share/vulkan/icd.d
         LATENCYFLEX: '1'
-        PROTON_USE_WINED3D: '1'
+        DXVK_LOG_LEVEL: info
+        VKD3D_DEBUG: warn
         CUDA_EXPERIMENTAL: '1'
 - name: DaVinci Resolve Studio (ARM64) (wine)
   game_slug: davinci-resolve-studio
@@ -317,7 +320,7 @@
         app: win10 vcrun2019
     - copy:
         src: directml_dll
-        dst: $GAMEDIR/drive_c/windows/system32/directml.dll
+        dst: $GAMEDIR/drive_c/windows/system32/
     - task:
         name: wineexec
         prefix: $GAMEDIR
@@ -366,8 +369,8 @@
     wine:
       esync: true
       fsync: false
-      dxvk: false
-      vkd3d: false
+      dxvk: true
+      vkd3d: true
       latencyflex: true
       overrides:
         directml: n,b
@@ -381,4 +384,5 @@
         __GL_DISK_CACHE: '1'
         VK_ICD_FILENAMES: /usr/share/vulkan/icd.d
         LATENCYFLEX: '1'
-        PROTON_USE_WINED3D: '1'
+        DXVK_LOG_LEVEL: info
+        VKD3D_DEBUG: warn
