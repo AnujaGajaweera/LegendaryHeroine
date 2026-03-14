@@ -12,6 +12,7 @@ from .lutris_paths import detect_lutris_cache_dir, lutris_cache_candidates
 from .models import TARGETS, TargetConfig
 from .runner import select_runner
 from .yamlgen import generate_combined_yaml
+from .launcher_gen import generate_bottles_docs, generate_heroic_docs
 
 
 def install_release(
@@ -56,10 +57,11 @@ def generate_yaml_files(
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="DaVinci Resolve modular Wine/Proton installer + Lutris YAML generator")
+    parser = argparse.ArgumentParser(description="DaVinci Resolve modular installer + launcher generator")
     parser.add_argument("--action", choices=["install", "generate", "both"], default="both")
     parser.add_argument("--target", choices=["all", *TARGETS.keys()], default="all")
     parser.add_argument("--runner", choices=["wine", "proton"], default="wine")
+    parser.add_argument("--launcher", choices=["lutris", "bottles", "heroic"], default="lutris")
 
     parser.add_argument("--installer", type=Path, help="Path to DaVinci Resolve Windows installer (.exe)")
     parser.add_argument("--directml-dll", type=Path, help="Path to directml.dll")
@@ -104,6 +106,8 @@ def main() -> int:
 
     try:
         if args.action in ("install", "both"):
+            if args.launcher != "lutris":
+                raise RuntimeError("Install action currently supports Lutris only. Use --action generate for Bottles/Heroic.")
             if args.target == "all":
                 raise RuntimeError("Install action requires a single --target (not --target all)")
             if args.installer is None:
@@ -126,15 +130,36 @@ def main() -> int:
             )
 
         if args.action in ("generate", "both"):
-            generate_yaml_files(
-                targets,
-                args.prefix_root,
-                args.output_dir,
-                runner,
-                args.wine_version,
-                args.proton_version,
-                vulkan_supported,
-            )
+            if args.launcher == "lutris":
+                generate_yaml_files(
+                    targets,
+                    args.prefix_root,
+                    args.output_dir,
+                    runner,
+                    args.wine_version,
+                    args.proton_version,
+                    vulkan_supported,
+                )
+            elif args.launcher == "bottles":
+                out = generate_bottles_docs(
+                    targets,
+                    args.prefix_root,
+                    args.output_dir,
+                    runner,
+                    args.vk_icd,
+                    vulkan_supported,
+                )
+                logging.info("Generated %s", out)
+            elif args.launcher == "heroic":
+                out = generate_heroic_docs(
+                    targets,
+                    args.prefix_root,
+                    args.output_dir,
+                    runner,
+                    args.vk_icd,
+                    vulkan_supported,
+                )
+                logging.info("Generated %s", out)
 
     except Exception as exc:
         logging.error("Failure: %s", exc)
